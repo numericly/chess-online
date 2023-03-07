@@ -2,7 +2,7 @@
 	import { Team } from '$lib/game';
 	import { onDestroy } from 'svelte';
 	import type { Writable } from 'svelte/store';
-	import { Game, BoardPosition, Color, Piece, type Move, type VisualBoard } from './game';
+	import { Game, BoardPosition, Color, Piece, Move, type VisualBoard } from './game';
 
 	export let position: BoardPosition;
 	export let board: VisualBoard;
@@ -58,10 +58,7 @@
 
 		if (from.equals(to)) return;
 
-		let move: Move = {
-			from,
-			to: new BoardPosition(position.x + x, position.y + y)
-		};
+		let move = new Move(from, to);
 
 		let valid_pos = game.getMoves(piece, position).find((pos) => {
 			return pos.equals(move.to);
@@ -76,7 +73,7 @@
 		if (piece === undefined) return;
 		if (game.turn !== piece.color) return;
 
-		if (!isTurn(piece)) return;
+		if (!canMove(piece)) return;
 
 		let x = board.offset.left + position.x * (board.size.width / 8) + board.size.width / 8 / 2;
 		let y = board.offset.top + position.y * (board.size.height / 8) + board.size.width / 8 / 2;
@@ -89,7 +86,7 @@
 		window.addEventListener('mouseup', handleMouseUp);
 	}
 
-	function isTurn(piece: Piece): boolean {
+	function canMove(piece: Piece): boolean {
 		if (piece.color === Color.White && (team === Team.Black || team === Team.Spectator))
 			return false;
 		if (piece.color === Color.Black && (team === Team.White || team === Team.Spectator))
@@ -104,15 +101,17 @@
 	});
 </script>
 
-<div class="square-container {squareColor === Color.White ? 'bg-white-square' : 'bg-black-square'}">
+<div
+	class="square-container z-0 {squareColor === Color.White ? 'bg-white-square' : 'bg-black-square'}"
+>
 	{#if legal_moves.has(position.toFen())}
 		{#if piece !== undefined}
 			<div
-				class="absolute rounded-full w-[90%] h-[90%] border-[6px] opacity-30 {squareColor ===
-				Color.White
+				class="absolute z-1 rounded-full w-[90%] h-[90%] opacity-30 {squareColor === Color.White
 					? 'border-black-square'
 					: 'border-white-square'}"
 				style="
+					border-width: {board.size.width / 12 / 7.5}px;
 					width: {board.size.width / 8}px; 
 					height: {board.size.height / 8}px;
 					{getPosition(dragging)}
@@ -129,7 +128,7 @@
 	{#if piece !== undefined && dragging === undefined}
 		<img
 			src={piece.image()}
-			class="select-none w-full h-full {isTurn(piece)
+			class="select-none z-[2] w-full h-full {canMove(piece)
 				? 'cursor-grab'
 				: ''} {$selected_piece?.equals(position) ? 'drop-shadow-[0_3px_3px_#0007]' : ''}"
 			alt={piece.toString()}

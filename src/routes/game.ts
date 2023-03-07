@@ -33,10 +33,26 @@ export enum PieceType {
 	Knight
 }
 
-export type Move = {
+export class Move {
 	from: BoardPosition;
 	to: BoardPosition;
-};
+
+	static fromFen(fen: string): Move {
+		if (fen.length !== 4) throw new Error('Invalid move. Length must be 4');
+		const from = BoardPosition.fromFen(fen.slice(0, 2));
+		const to = BoardPosition.fromFen(fen.slice(2, 4));
+		return new Move(from, to);
+	}
+
+	constructor(from: BoardPosition, to: BoardPosition) {
+		this.from = from;
+		this.to = to;
+	}
+
+	toFen(): string {
+		return `${this.from.toFen()}${this.to.toFen()}`;
+	}
+}
 
 export class Game {
 	turn: Color;
@@ -46,6 +62,7 @@ export class Game {
 	last_move: Writable<Move | undefined>;
 	halfmove_clock: number;
 	fullmove_number: number;
+	moves: Writable<Move[]> = writable([]);
 
 	static default(): Game {
 		return new Game(
@@ -82,7 +99,8 @@ export class Game {
 			undefined,
 			undefined,
 			0,
-			0
+			0,
+			[]
 		);
 	}
 
@@ -93,13 +111,15 @@ export class Game {
 		en_passant: BoardPosition | undefined,
 		last_move: Move | undefined,
 		halfmove_clock: number,
-		fullmove_number: number
+		fullmove_number: number,
+		moves: Move[]
 	) {
 		this.turn = turn;
 		this.castling = castling;
 		this.en_passant = en_passant;
 		this.board = writable(board);
 		this.last_move = writable(last_move);
+		this.moves = writable(moves);
 		this.halfmove_clock = halfmove_clock;
 		this.fullmove_number = fullmove_number;
 	}
@@ -122,7 +142,7 @@ export class Game {
 		let moves = piece.getMoves(board, position);
 
 		moves = moves.filter((move) => {
-			return !this.createsCheck({ from: position, to: move });
+			return !this.createsCheck(new Move(position, move));
 		});
 
 		return moves;
@@ -211,6 +231,11 @@ export class Game {
 		this.board.set(board);
 
 		this.turn = this.turn === Color.White ? Color.Black : Color.White;
+
+		this.moves.update((moves) => {
+			moves.push(move);
+			return moves;
+		});
 
 		if (!this.hasMoves(this.turn)) {
 			if (this.inCheck(this.turn)) {

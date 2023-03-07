@@ -4,10 +4,8 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
-				'black-square': '#547296',
-				'white-square': '#EAE9D4',
-				'black-square-highlight': '#e6e185',
-				'white-square-highlight': '#e8e6b7'
+				'black-square': '#7D955D',
+				'white-square': '#EEEED5'
 			}
 		}
 	},
