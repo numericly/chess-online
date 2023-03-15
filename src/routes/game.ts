@@ -123,6 +123,7 @@ export class Game {
 		this.halfmove_clock = halfmove_clock;
 		this.fullmove_number = fullmove_number;
 	}
+
 	hasMoves(side: Color): boolean {
 		const board = get(this.board);
 		const moves = board.some((row, y) => {
@@ -137,6 +138,7 @@ export class Game {
 
 		return moves;
 	}
+
 	getMoves(piece: Piece, position: BoardPosition): BoardPosition[] {
 		const board = get(this.board);
 		let moves = piece.getMoves(board, position);
@@ -256,6 +258,7 @@ export class Game {
 		}
 		return str;
 	}
+
 	pieceAt(pos: BoardPosition): Piece | undefined {
 		return get(this.board)[pos.y][pos.x];
 	}
@@ -477,6 +480,7 @@ class Pawn extends Piece {
 	fen(): string {
 		return 'p';
 	}
+
 	image(): string {
 		return this.color === Color.White ? WhitePawn : BlackPawn;
 	}
@@ -486,6 +490,7 @@ class Knight extends Piece {
 	constructor(color: Color) {
 		super(color, PieceType.Knight);
 	}
+
 	getMoves(board: (Piece | undefined)[][], position: BoardPosition): BoardPosition[] {
 		const moves = [
 			this.move(board, position, 1, 2),
@@ -500,9 +505,11 @@ class Knight extends Piece {
 
 		return moves.filter((move) => move !== undefined) as BoardPosition[];
 	}
+
 	fen(): string {
 		return 'n';
 	}
+
 	image(): string {
 		return this.color === Color.White ? WhiteKnight : BlackKnight;
 	}
@@ -519,6 +526,7 @@ class Bishop extends Piece {
 	constructor(color: Color) {
 		super(color, PieceType.Bishop);
 	}
+
 	getMoves(board: (Piece | undefined)[][], position: BoardPosition): BoardPosition[] {
 		const moves: BoardPosition[] = [];
 
@@ -550,9 +558,11 @@ class Bishop extends Piece {
 		}
 		return moves;
 	}
+
 	fen(): string {
 		return 'b';
 	}
+
 	image(): string {
 		return this.color === Color.White ? WhiteBishop : BlackBishop;
 	}
