@@ -3,6 +3,8 @@
 		"bestmove",
 		"fullmove",
 		"halfmove",
+		"queenside",
+		"singleplayer",
 		"startpos",
 		"stockfish"
 	]

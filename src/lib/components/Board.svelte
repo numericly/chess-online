@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BoardPosition, Game, type VisualBoard } from './game';
+	import { BoardPosition, Game, type VisualBoard } from '$lib/game';
 	import SquareComponent from './SquareComponent.svelte';
 	import { writable, type Writable } from 'svelte/store';
 	import type { Team } from '$lib/game';
@@ -12,15 +12,18 @@
 	let board_component: HTMLDivElement | undefined;
 	let board: VisualBoard | undefined;
 	let selected_piece: Writable<BoardPosition | undefined> = writable(undefined);
-	let { board: board_data } = game;
 
-	$: $board_data, onMove();
+	$: game, registerListener();
 	$: onResize(board_component);
 	$: onPieceSelected($selected_piece);
 
-	function onMove() {
-		selected_piece.set(undefined);
-		legal_moves = new Set();
+	function registerListener() {
+		function onBoardUpdate() {
+			selected_piece.set(undefined);
+			legal_moves = new Set();
+		}
+		game.on('move', onBoardUpdate);
+		onBoardUpdate();
 	}
 
 	function onResize(board_component: HTMLDivElement | undefined) {
@@ -44,7 +47,7 @@
 			return;
 		}
 		let selected_piece = game.pieceAt(pos);
-		if (selected_piece !== undefined) {
+		if (selected_piece !== null) {
 			legal_moves = game.getMoves(selected_piece, pos).reduce((moves, move) => {
 				moves.add(move.toFen());
 				return moves;

@@ -1,5 +1,5 @@
 import { JWT_SECRET } from '$lib/server/secrets';
-import { AccountData } from '$lib/server/server';
+import { AccountSchema } from '$lib/server/server';
 import jwt from 'jsonwebtoken';
 const { sign, verify } = jwt;
 import { v4 } from 'uuid';
@@ -12,12 +12,12 @@ export const load = (async ({ cookies }) => {
 		if (auth === undefined) {
 			throw new Error('No auth cookie');
 		}
-		const account = AccountData.parse(verify(auth, JWT_SECRET));
+		const account = AccountSchema.parse(verify(auth, JWT_SECRET));
 		return {
 			account
 		};
 	} catch (error) {
-		const account: z.infer<typeof AccountData> = {
+		const account: z.infer<typeof AccountSchema> = {
 			id: v4(),
 			created_at: Date.now().toString()
 		};
