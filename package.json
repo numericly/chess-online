@@ -37,8 +37,12 @@
 		"vite": "^4.0.0",
 		"yarn": "^1.22.19"
 	},
+	"browser": {
+		"crypto": false
+	},
 	"dependencies": {
 		"@sveltejs/adapter-node": "^1.2.1",
+		"crypto": "^1.0.1",
 		"daisyui": "^2.51.2",
 		"dotenv": "^16.0.3",
 		"events": "^3.3.0",

@@ -1,6 +1,5 @@
 import type { Server, Socket } from 'socket.io';
 import { verify } from 'jsonwebtoken';
-import { createHash } from 'node:crypto';
 import { JWT_SECRET } from './secrets';
 import { z } from 'zod';
 import {
@@ -46,14 +45,14 @@ export const game_manager = {
 		}
 		return this.games[id];
 	},
-	joinGame: function (game: Lobby, player: Player): { team: Team; reconnecting: boolean } {
+	joinGame: function (game: Lobby, player: Player): Team {
 		if (
 			game.black !== undefined &&
 			game.black.account.id === player.account.id &&
 			!game.black.socket.connected
 		) {
 			game.black = player;
-			return { team: 'black', reconnecting: true };
+			return 'black';
 		}
 		if (
 			game.white !== undefined &&
@@ -61,32 +60,32 @@ export const game_manager = {
 			!game.white.socket.connected
 		) {
 			game.white = player;
-			return { team: 'white', reconnecting: true };
+			return 'white';
 		}
 		if (game.black === undefined && game.white === undefined) {
 			if (Math.random() < 0.5) {
 				game.white = player;
-				return { team: 'white', reconnecting: false };
+				return 'white';
 			} else {
 				game.black = player;
-				return { team: 'black', reconnecting: false };
+				return 'black';
 			}
 		} else if (game.black === undefined) {
 			game.black = player;
-			return { team: 'black', reconnecting: false };
+			return 'black';
 		} else if (game.white === undefined) {
 			game.white = player;
-			return { team: 'white', reconnecting: false };
+			return 'white';
 		}
 		game.spectators.push(player);
-		return { team: 'spectator', reconnecting: false };
+		return 'spectator';
 	},
-	getOtherPlayers: function (game: Lobby, id: string): OtherPlayer[] {
+	getOtherPlayers: function (game: Lobby, id: string, team: Team): OtherPlayer[] {
 		const players = [];
 
-		if (game.black !== undefined && game.black.account.id !== id)
+		if (game.black !== undefined && (game.black.account.id !== id || team !== 'black'))
 			players.push(this.convertPlayer(game.black, 'black'));
-		if (game.white !== undefined && game.white.account.id !== id)
+		if (game.white !== undefined && (game.white.account.id !== id || team !== 'white'))
 			players.push(this.convertPlayer(game.white, 'white'));
 
 		for (const spectator of game.spectators) {
@@ -100,7 +99,7 @@ export const game_manager = {
 		return {
 			id: player.account.id,
 			team,
-			display_name: player.account.id
+			display_name: 'Opponent'
 		};
 	}
 };
@@ -112,30 +111,31 @@ export function start(server: Server<ClientToServerEvents, ServerToClientEvents>
 			const player = { socket, account };
 			const { id } = JoinGameSchema.parse(socket.handshake.query);
 			const game = game_manager.getOrCreate(id);
-			const { team, reconnecting } = game_manager.joinGame(game, player);
+			const team = game_manager.joinGame(game, player);
 
-			const other_players = game_manager.getOtherPlayers(game, account.id);
+			const other_players = game_manager.getOtherPlayers(game, account.id, team);
 
 			console.log('Client connected', account.id, id, team);
 
 			socket.join(id);
-			if (!reconnecting) {
-				socket.to(id).emit('player_join', game_manager.convertPlayer(player, team));
-			}
+
 			socket.emit('load_game', { board: game.game, team, players: other_players });
 
-			socket.on('move', (data) => {
-				try {
-					const move_data = MoveSchema.parse(data);
-					game.game.makeMove(move_data);
-				} catch (e) {
-					socket.disconnect();
-				}
-			});
+			if (team !== 'spectator') {
+				socket.to(id).emit('player_join', game_manager.convertPlayer(player, team));
 
-			socket.on('disconnect', (reason) => {
-				socket.to(id).emit('player_leave', account.id);
-			});
+				socket.on('move', (data) => {
+					try {
+						const move_data = MoveSchema.parse(data);
+						game.game.makeMove(move_data);
+					} catch (e) {
+						socket.disconnect();
+					}
+				});
+				socket.on('disconnect', () => {
+					socket.to(id).emit('player_leave', account.id);
+				});
+			}
 
 			game.game.on('move', (move, _, turn) => {
 				if (team !== turn) {
@@ -166,8 +166,4 @@ function parseCookie(cookie: string): { [key: string]: string } {
 		acc[cookie_parts[0]] = cookie_parts[1];
 		return acc;
 	}, {} as { [key: string]: string });
-}
-
-function sha256(content: string): string {
-	return createHash('sha3-256').update(content).digest('hex');
 }

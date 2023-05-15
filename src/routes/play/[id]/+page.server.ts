@@ -1,9 +1,17 @@
-import { UUID_PATTERN } from '$lib/messages';
+import { GAME_ID_PATTERN, type OtherPlayer } from '$lib/messages';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import type { Team } from '$lib/game';
+
+export type TeamCard = {
+	player: OtherPlayer;
+	team: Team;
+	is_me: boolean;
+	is_connected: boolean;
+};
 
 export const load = (async ({ parent, params }) => {
-	if (!UUID_PATTERN.test(params.id)) {
+	if (!GAME_ID_PATTERN.test(params.id)) {
 		throw error(404, 'Invalid game ID');
 	}
 

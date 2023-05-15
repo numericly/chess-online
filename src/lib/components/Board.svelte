@@ -81,6 +81,6 @@
 
 <style>
 	.board {
-		@apply grid grid-cols-8 rounded-xl overflow-hidden border-base-200 border-2 shadow-lg;
+		@apply grid grid-cols-8 rounded-xl overflow-hidden border-base-200 border-2;
 	}
 </style>

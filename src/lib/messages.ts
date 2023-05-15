@@ -1,8 +1,7 @@
 import { BoardPosition, Game, Move, Piece } from './game';
 import { z } from 'zod';
 
-export const UUID_PATTERN =
-	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+export const GAME_ID_PATTERN = /^[a-z0-9]{6}$/;
 
 export const TeamSchema = z.enum(['white', 'black', 'spectator', 'both']);
 export const ColorSchema = z.enum(['white', 'black']);
@@ -69,6 +68,6 @@ export type ClientToServerEvents = {
 };
 
 export const JoinGameSchema = z.object({
-	id: z.string().refine((id) => UUID_PATTERN.test(id))
+	id: z.string().refine((id) => GAME_ID_PATTERN.test(id))
 });
 export type JoinGame = z.infer<typeof JoinGameSchema>;

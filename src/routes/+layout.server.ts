@@ -23,6 +23,7 @@ export const load = (async ({ cookies }) => {
 		};
 		const auth = sign(account, JWT_SECRET);
 		cookies.set('auth', auth, {
+			path: '/',
 			httpOnly: true,
 			expires: undefined,
 			secure: false
