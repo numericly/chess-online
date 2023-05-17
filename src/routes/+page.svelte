@@ -17,7 +17,7 @@
 			return str.toString(36);
 		})
 			.join('')
-			.substring(0, 6);
+			.substring(0, 3);
 
 		goto(`/play/${game_id}`);
 	}

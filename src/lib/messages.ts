@@ -1,7 +1,7 @@
 import { BoardPosition, Game, Move, Piece } from './game';
 import { z } from 'zod';
 
-export const GAME_ID_PATTERN = /^[a-z0-9]{6}$/;
+export const GAME_ID_PATTERN = /^[a-z0-9]{3}$/;
 
 export const TeamSchema = z.enum(['white', 'black', 'spectator', 'both']);
 export const ColorSchema = z.enum(['white', 'black']);
