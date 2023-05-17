@@ -2,8 +2,6 @@
 	import type { PageData } from './$types';
 	import { type Team, Game } from '$lib/game';
 	import Board from '$lib/components/Board.svelte';
-	import { v4 } from 'uuid';
-	import { redirect } from '@sveltejs/kit';
 	import { goto } from '$app/navigation';
 
 	export let data: PageData;
@@ -21,7 +19,6 @@
 			.join('')
 			.substring(0, 6);
 
-		// console.log('creating game', game_id);
 		goto(`/play/${game_id}`);
 	}
 

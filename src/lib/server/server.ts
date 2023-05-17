@@ -62,6 +62,10 @@ export const game_manager = {
 			game.white = player;
 			return 'white';
 		}
+
+		if (game.black?.account.id === player.account.id) return 'spectator';
+		if (game.white?.account.id === player.account.id) return 'spectator';
+
 		if (game.black === undefined && game.white === undefined) {
 			if (Math.random() < 0.5) {
 				game.white = player;
@@ -83,15 +87,26 @@ export const game_manager = {
 	getOtherPlayers: function (game: Lobby, id: string, team: Team): OtherPlayer[] {
 		const players = [];
 
+		if (team === 'spectator') {
+			if (game.black !== undefined) {
+				const player = this.convertPlayer(game.black, 'black');
+
+				player.display_name = `Black${game.black.account.id === id ? ' (You)' : ''}`;
+				players.push(player);
+			}
+			if (game.white !== undefined) {
+				const player = this.convertPlayer(game.white, 'white');
+
+				player.display_name = `White${game.white.account.id === id ? ' (You)' : ''}`;
+				players.push(player);
+			}
+			return players;
+		}
+
 		if (game.black !== undefined && (game.black.account.id !== id || team !== 'black'))
 			players.push(this.convertPlayer(game.black, 'black'));
 		if (game.white !== undefined && (game.white.account.id !== id || team !== 'white'))
 			players.push(this.convertPlayer(game.white, 'white'));
-
-		for (const spectator of game.spectators) {
-			if (spectator.account.id === id) continue;
-			players.push(this.convertPlayer(spectator, 'spectator'));
-		}
 
 		return players;
 	},
