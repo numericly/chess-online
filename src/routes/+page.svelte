@@ -9,6 +9,7 @@
 	export let data: PageData;
 
 	let game = Game.default();
+	let game_code = '';
 	let team = 'spectator' as Team;
 
 	function createGame() {
@@ -23,6 +24,10 @@
 		// console.log('creating game', game_id);
 		goto(`/play/${game_id}`);
 	}
+
+	function joinGame() {
+		goto(`/play/${game_code}`);
+	}
 </script>
 
 <div class="modal modal-open">
@@ -30,8 +35,15 @@
 		<div class="flex flex-col">
 			<a class="btn" href="/local-game">Local Game</a>
 			<button class="btn mt-1" on:click={createGame}>Host Multiplayer</button>
-			<button class="btn mt-1">Join</button>
-			<button class="btn mt-1">Spectate</button>
+			<div class="input-group mt-1">
+				<input
+					type="text"
+					placeholder="Game code"
+					class="input input-bordered w-full"
+					bind:value={game_code}
+				/>
+				<button class="btn btn-square px-8" on:click={joinGame}>Join</button>
+			</div>
 		</div>
 	</div>
 </div>
